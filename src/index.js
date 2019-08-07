@@ -63,7 +63,7 @@ app.post('/personas', function (req, res) {
       return
     }
     try {
-      res.json(addPerson(person))
+      res.status(201).json(addPerson(person))
     } catch(e) {
       res.status = 400
       res.json({ error: e.message})
