@@ -22,6 +22,8 @@ function operation(op) {
 
 app.use(express.static(path.join(__dirname, '..', 'public')))
 app.use(bodyParser.json())
+const cookieParser = require("cookie-parser")
+app.use(cookieParser())
 
 app.get('/personas/:id', function (req, res) {
   operation(() => {
@@ -53,6 +55,19 @@ app.get('/personas', function (req, res) {
   })
 })
 
+app.get('/home', function (req, res) {
+  let session = req.cookies.session
+  if (!session) {
+    res.status(401).send('<html><body><h1>Error! No ha iniciado sesión</h1></html>')
+    return
+  }
+  if ((new Date()).getTime() - Number.parseInt(session, 10) > 5000) {
+    res.status(401).send('<html><body><h1>Error! Sesión expirada</h1></html>')
+    return
+  }
+  res.status(401).sendFile(path.join( __dirname, '../public/--home.html'))
+})
+
 app.post('/personas', function (req, res) {
   operation(() => {
     const person = req.body
@@ -69,6 +84,26 @@ app.post('/personas', function (req, res) {
       res.json({ error: e.message})
       return
     }
+  })
+});
+
+app.post('/login', function (req, res) {
+  const credentials = req.body
+  if (!credentials) {
+    res.status(401).json({ error: 'Credenciales inválidas'})
+    return
+  }
+  if (credentials.user != 'tester') {
+    res.status(401).json({ error: 'Credenciales inválidas'})
+    return
+  }
+  if (credentials.password != 'testing') {
+    res.status(401).json({ error: 'Credenciales inválidas'})
+    return
+  }
+  res.status(201).json({
+    url: '/home',
+    session: (new Date()).getTime()
   })
 });
 
