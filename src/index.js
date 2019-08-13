@@ -1,3 +1,4 @@
+const conf = require('../conf/conf.json')
 const path = require('path')
 const port = process.env.PORT || 8080
 const express = require('express');
@@ -57,15 +58,17 @@ app.get('/personas', function (req, res) {
 
 app.get('/home', function (req, res) {
   let session = req.cookies.session
-  if (!session) {
-    res.status(401).send('<html><body><h1>Error! No ha iniciado sesión</h1></html>')
+
+  if (!session || (new Date()).getTime() - Number.parseInt(session, 10) > 5000) {
+    res.status(401).sendFile(path.join( __dirname, '../public/session-expired.html'))
     return
   }
-  if ((new Date()).getTime() - Number.parseInt(session, 10) > 5000) {
-    res.status(401).send('<html><body><h1>Error! Sesión expirada</h1></html>')
-    return
-  }
-  res.status(401).sendFile(path.join( __dirname, '../public/--home.html'))
+  res.sendFile(path.join( __dirname, '../public/--home.html'))
+})
+
+
+app.get('/login-error', function (req, res) {
+  res.status(401).sendFile(path.join( __dirname, '../public/login-error.html'))
 })
 
 app.post('/personas', function (req, res) {
@@ -93,16 +96,15 @@ app.post('/login', function (req, res) {
     res.status(401).json({ error: 'Credenciales inválidas'})
     return
   }
-  if (credentials.user != 'tester') {
+  if (credentials.user != conf.user) {
     res.status(401).json({ error: 'Credenciales inválidas'})
     return
   }
-  if (credentials.password != 'testing') {
+  if (credentials.password != conf.password) {
     res.status(401).json({ error: 'Credenciales inválidas'})
     return
   }
   res.status(201).json({
-    url: '/home',
     session: (new Date()).getTime()
   })
 });

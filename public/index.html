@@ -46,10 +46,10 @@ $(function() {
       dataType: "json",
       success: function(data) {
         document.cookie = "session=" + data.session
-        window.location.href = data.url
+        window.location.href = '/home'
       },
       error: function() {
-        alert('Error. Credenciales no válidas.')
+        window.location.href = '/login-error'
       }
     });
   })
